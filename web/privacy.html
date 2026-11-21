@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Landed</title>
+<link rel="icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav"><div class="wrap"><a class="brand" href="./">Landed</a><nav><a class="btn small" href="demo.html">Try the demo</a></nav></div></header>
+<main class="wrap narrow prose">
+  <h1>Privacy</h1>
+  <p>Last updated 22 November 2026.</p>
+  <p>Landed is a hackathon demo. It has no accounts, no sign-in, no cookies and no analytics.</p>
+  <h2>What the demo stores</h2>
+  <ul>
+    <li><b>On HSK Chain (public, permanent):</b> a one-way fingerprint of the flight, date and booking reference, the wallet address that was paid, the delay in minutes, the amount and the HSP transaction hash. The booking reference itself is never stored.</li>
+    <li><b>At HashKey Settlement Platform:</b> the payment order (recipient wallet, amount, a cart label such as "Delay compensation DA117") under HSP's own terms.</li>
+    <li><b>Nothing else.</b> The demo server keeps no database of passengers.</li>
+  </ul>
+  <h2>What not to enter</h2>
+  <p>Use the example bookings or made-up ones. Do not enter a real booking reference, name or personal wallet you want to keep private, because receipts on a public chain cannot be deleted.</p>
+  <h2>Contact</h2>
+  <p>Open an issue at <a href="https://github.com/0xvikram/landed/issues">github.com/0xvikram/landed</a>.</p>
+</main>
+<footer><div class="wrap"><div>Landed</div><div><a href="./">Home</a><a href="terms.html">Terms</a></div></div></footer>
+</body>
+</html>

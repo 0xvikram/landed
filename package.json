@@ -5,7 +5,8 @@
   "scripts": {
     "test": "hardhat test",
     "inspect": "tsx agent/inspect.ts",
-    "test:agent": "tsx --test agent/*.test.ts"
+    "test:agent": "tsx --test agent/*.test.ts",
+    "agent": "tsx agent/server.ts"
   },
   "keywords": [],
   "author": "",

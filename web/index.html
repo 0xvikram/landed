@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landed: delay compensation, paid on landing</title>
+<meta name="description" content="When a flight lands late, the airline's payment agent pays each passenger the compensation they are owed, automatically, with a public receipt that stops double payment.">
+<meta property="og:title" content="Landed: landed late? Paid on landing.">
+<meta property="og:description" content="The airline's payment agent pays delay compensation the moment a flight lands late. Paid through HashKey Settlement Platform, receipts on HSK Chain.">
+<meta property="og:image" content="og.png">
+<link rel="icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="./"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 24h26" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M6 19.5l17.5-6.2c1.6-.6 3.3.3 3.8 1.9l.2.6-15.6 5.6-4.4-1.2-3.4-6.6 2.6-.9 4 3.6z" fill="currentColor"/></svg>Landed</a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a href="proof.html">Payouts</a>
+      <a class="btn small" href="demo.html">Try the demo</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Delay compensation, automated</div>
+      <h1>Landed late?<br><em>Paid on landing.</em></h1>
+      <p class="lede">When a flight lands late, the airline's payment agent pays every passenger what they are owed. No forms, no claims firm, no waiting weeks. Each payout leaves a public receipt, so nobody is paid twice and nobody is forgotten.</p>
+      <div class="cta">
+        <a class="btn" href="demo.html">Try the live demo</a>
+        <a class="btn ghost" href="proof.html">See every payout</a>
+      </div>
+      <p class="note">A hackathon build for HSK Chain Horizon Seoul. Flight delays in the demo are simulated; payments run on HashKey Settlement Platform's test network.</p>
+
+      <div class="pass" aria-label="Example boarding pass showing a late landing and an automatic payout">
+        <div class="main">
+          <div class="eyebrow">Example</div>
+          <div class="route"><span class="code">LHR</span><span class="line"></span><span class="code">JFK</span></div>
+          <div class="kv">
+            <div><span>Flight</span><b>DA 117</b></div>
+            <div><span>Due</span><b>14:10</b></div>
+            <div><span>Landed</span><b class="late">17:22</b></div>
+            <div><span>Delay</span><b class="late">3 h 12 m</b></div>
+            <div><span>Rule</span><b>3 h+ late</b></div>
+            <div><span>Booking</span><b>XK4P2Q</b></div>
+          </div>
+        </div>
+        <div class="side">
+          <div>
+            <div class="eyebrow">Paid automatically</div>
+            <div class="paid">$25.00</div>
+            <p class="note" style="margin-top:8px">41 seconds after landing, to the passenger's wallet.</p>
+          </div>
+          <div class="receipt">Receipt on HSK Chain · one payout per booking<br>Settled through HSP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid2" style="align-items:center">
+        <div>
+          <div class="eyebrow">The problem</div>
+          <h2 style="margin-top:14px">The money is owed. <em>You still have to chase it.</em></h2>
+          <p class="lede" style="margin-bottom:0">Under EU rules, a flight that lands three hours or more late owes each passenger €250 to €600, depending on distance. The UK and Canada have similar rules. But the airline only pays if you claim: find the form, prove the delay, wait. Every claim costs the passenger time, and claims firms keep a share of what they recover.</p>
+        </div>
+        <div class="card">
+          <div class="big-stat">€250–600 <small>per passenger</small></div>
+          <p>owed under EU Regulation 261/2004 for a 3 hour+ arrival delay, unless the cause was extraordinary, such as severe weather. <a href="https://europa.eu/youreurope/citizens/travel/passenger-rights/air/index_en.htm">Source</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">How it works</div>
+        <h2 style="margin-top:14px">Two agents, one rule, <em>one receipt.</em></h2>
+        <p>The airline publishes its compensation rule once. After that, every late landing is handled by its payment agent, with a person approving each payout.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div><h3>The passenger's agent sends the claim</h3><p>Flight, date, booking and the wallet to pay. The booking reference never goes on chain, only a fingerprint of it.</p></div></div>
+        <div class="step"><div><h3>The airline's agent checks the published rule</h3><p>The rule lives in a contract on HSK Chain: for example 2 hours late pays $10, 3 hours $25, 5 hours $60. Code decides the amount, never an AI model.</p></div></div>
+        <div class="step"><div><h3>It locks the booking before paying</h3><p>A reservation on HSK Chain means a second claim for the same booking is refused, even if it arrives a second later.</p></div></div>
+        <div class="step"><div><h3>A person approves, the agent pays through HSP</h3><p>The airline sees who is paid, from where and how much, and approves. The agent then pays through HashKey Settlement Platform: order, quote, signature, submit, confirm.</p></div></div>
+        <div class="step"><div><h3>The receipt is written on HSK Chain</h3><p>The HSP transaction becomes the receipt. If a payment fails, the booking is released so it can be retried. If the result is unclear, it stays locked until it is resolved.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Compared</div>
+        <h2 style="margin-top:14px">Why paying first <em>beats claiming later.</em></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Airline claim form</th><th>Claims firm</th><th>Landed</th></tr></thead>
+          <tbody>
+            <tr><td>Who starts it</td><td class="no">The passenger</td><td class="no">The passenger</td><td class="yes">The landing</td></tr>
+            <tr><td>Time to money</td><td class="no">Weeks</td><td class="no">Weeks to months</td><td class="yes">Under a minute</td></tr>
+            <tr><td>Passenger keeps</td><td class="yes">All of it</td><td class="no">What is left after the fee</td><td class="yes">All of it</td></tr>
+            <tr><td>Double payment</td><td class="no">Manual checks</td><td class="no">Manual checks</td><td class="yes">Refused by the contract</td></tr>
+            <tr><td>Proof it was paid</td><td class="no">An email</td><td class="no">An email</td><td class="yes">A public receipt</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Built on</div>
+        <h2 style="margin-top:14px">Settlement that agents <em>can actually use.</em></h2>
+      </div>
+      <div class="grid3">
+        <div class="card"><div class="num">HSP</div><h3 style="margin-top:10px">HashKey Settlement Platform</h3><p>The airline's agent pays through HSP's agentic payment tools: an AP2-style cart, an x402 payment method and a signed mandate. HSP's gateway broadcasts the payment.</p></div>
+        <div class="card"><div class="num">HSK CHAIN</div><h3 style="margin-top:10px">Policy and receipts</h3><p>The rule, the reservation and the receipt live in one small contract on HSK Chain mainnet, so anyone can check what was paid and why.</p></div>
+        <div class="card"><div class="num">MCP</div><h3 style="margin-top:10px">Agent to agent</h3><p>The passenger's agent sends terms, the airline's agent pays, and the passenger's agent checks the payment with HSP before showing "paid".</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap narrow">
+      <div class="section-head"><div class="eyebrow">FAQ</div><h2 style="margin-top:14px">Questions</h2></div>
+      <details><summary>Is this real money?</summary><p>Not in the demo. HashKey Settlement Platform's hackathon environment settles on test networks with test USDC, and the demo amounts are small. The policy and receipts contract is on HSK Chain mainnet.</p></details>
+      <details><summary>Are the flights real?</summary><p>No. The demo uses simulated flights and you choose how late they land. A real airline would feed in its own operations data.</p></details>
+      <details><summary>Who decides how much is paid?</summary><p>The airline's published rule, read from the contract. The agent never invents an amount, and a person at the airline approves each payout before it is signed and again before it is sent.</p></details>
+      <details><summary>What stops someone claiming twice?</summary><p>Each booking is locked on HSK Chain before any payment starts. A second claim for the same flight and booking is refused, even with different spacing or capital letters.</p></details>
+      <details><summary>What if a payment fails?</summary><p>If HSP reports a failure, or the airline declines, the booking is released so it can be paid later. If the payment was sent but the result is unclear, the booking stays locked until HSP confirms either way.</p></details>
+      <details><summary>Does my booking reference go on chain?</summary><p>No. Only a one-way fingerprint of flight, date and booking is stored, plus the wallet that was paid and the amount.</p></details>
+      <details><summary>Is the code open?</summary><p>Yes, under the MIT licence: <a href="https://github.com/0xvikram/landed">github.com/0xvikram/landed</a>.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>Landed · a hackathon build, not an airline service</div>
+    <div><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/0xvikram/landed">GitHub</a></div>
+  </div>
+</footer>
+</body>
+</html>

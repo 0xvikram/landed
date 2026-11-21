@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live demo · Landed</title>
+<meta name="description" content="Pick a flight, choose how late it lands, approve, and watch the airline's agent pay the passenger through HSP.">
+<link rel="icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav"><div class="wrap"><a class="brand" href="./"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 24h26" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M6 19.5l17.5-6.2c1.6-.6 3.3.3 3.8 1.9l.2.6-15.6 5.6-4.4-1.2-3.4-6.6 2.6-.9 4 3.6z" fill="currentColor"/></svg>Landed</a><nav><a href="./#how">How it works</a><a href="proof.html">Payouts</a></nav></div></header>
+
+<main class="wrap">
+  <div style="padding-top:32px">
+    <div class="eyebrow">Live demo</div>
+    <h2 style="margin-top:12px">Land a flight late. <em>Watch the payout.</em></h2>
+    <p class="banner" id="status" style="margin-top:18px">Checking the airline agent…</p>
+  </div>
+
+  <div class="app">
+    <aside>
+      <h3>1. Pick a flight</h3>
+      <p class="note">Simulated flights. Nothing here is a real airline schedule.</p>
+      <div id="flights" style="margin-top:12px"></div>
+
+      <h3 style="margin-top:24px">2. How late did it land?</h3>
+      <label class="field" for="delay">Arrival delay: <b id="delayLabel">3 h 12 m</b> · rule pays <b id="owed">$25.00</b></label>
+      <input id="delay" type="range" min="0" max="420" step="1" value="192">
+
+      <label class="field" for="booking">Booking reference (made up)</label>
+      <input id="booking" type="text" value="" maxlength="8" spellcheck="false">
+      <label class="field" for="wallet">Passenger wallet to pay</label>
+      <input id="wallet" type="text" value="" spellcheck="false">
+      <p class="note">Leave the demo wallet, or paste a test wallet of your own. Never a real booking.</p>
+
+      <button class="btn" id="land" style="margin-top:18px;width:100%;justify-content:center">Land the flight</button>
+    </aside>
+
+    <section style="padding:0">
+      <div class="card">
+        <h3>3. The airline's payment agent</h3>
+        <ul class="log" id="log" style="margin-top:12px"><li class="no"><span class="dot"></span><span>Waiting for a landing.</span><span></span></li></ul>
+        <div id="approval"></div>
+      </div>
+      <div class="card" id="result" style="margin-top:16px;display:none"></div>
+    </section>
+  </div>
+</main>
+
+<footer><div class="wrap"><div>Landed · simulated flights, HSP test network</div><div><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/0xvikram/landed">GitHub</a></div></div></footer>
+<script src="config.js"></script>
+<script src="demo.js"></script>
+</body>
+</html>

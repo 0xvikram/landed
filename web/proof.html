@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every payout · Landed</title>
+<meta name="description" content="Every delay payout Landed's agent has made, read live from the receipts contract on HSK Chain.">
+<link rel="icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav"><div class="wrap"><a class="brand" href="./"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 24h26" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M6 19.5l17.5-6.2c1.6-.6 3.3.3 3.8 1.9l.2.6-15.6 5.6-4.4-1.2-3.4-6.6 2.6-.9 4 3.6z" fill="currentColor"/></svg>Landed</a><nav><a href="./#how">How it works</a><a class="btn small" href="demo.html">Try the demo</a></nav></div></header>
+<main class="wrap" style="padding:40px 20px 72px">
+  <div class="eyebrow">Proof</div>
+  <h2 style="margin-top:12px">Every payout, <em>read from the chain.</em></h2>
+  <p class="lede" style="margin-bottom:20px">This page reads the receipts contract on HSK Chain directly from your browser. Nothing here comes from our server.</p>
+  <div class="grid3" style="margin-bottom:20px">
+    <div class="card"><div class="eyebrow">Payouts</div><div class="big-stat" id="count" style="font-size:48px">–</div></div>
+    <div class="card"><div class="eyebrow">Total paid</div><div class="big-stat" id="total" style="font-size:48px">–</div></div>
+    <div class="card"><div class="eyebrow">Contract</div><p id="contract" style="font:13px var(--mono);word-break:break-all">–</p></div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>Amount</th><th>Paid to</th><th>HSP payment</th><th>Receipt</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="5" class="no">Loading…</td></tr></tbody>
+  </table></div>
+</main>
+<footer><div class="wrap"><div>Landed</div><div><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/0xvikram/landed">GitHub</a></div></div></footer>
+<script src="config.js"></script>
+<script src="proof.js"></script>
+</body>
+</html>
