@@ -1,0 +1,24 @@
+{
+  "name": "landed",
+  "version": "1.0.0",
+  "description": "Airline payment agent that pays delay compensation via HSP, with receipts on HSK Chain",
+  "scripts": {
+    "test": "hardhat test",
+    "inspect": "tsx agent/inspect.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
+    "dotenv": "^18.0.10",
+    "hardhat": "^2.29.2",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "viem": "^2.58.4"
+  }
+}
