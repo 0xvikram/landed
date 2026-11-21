@@ -13,11 +13,11 @@ Entry for the HSK Chain Horizon Hackathon · Seoul, Track 2: Agent Payments & A2
 Flight delays in the demo are simulated and labelled as such. HSP's hackathon (QA) environment settles on test networks; the policy and receipts contract is on HSK Chain mainnet.
 
 ## Status
-Work in progress (started 21 Nov 2026).
+Work in progress (started 21 Nov 2026). Site: https://landed-delay.vercel.app
 - [x] `contracts/LandedPolicy.sol` + tests (`npx hardhat test`)
 - [x] HSP MCP client (`agent/hsp.ts`) and reachability check (`npx tsx agent/inspect.ts`)
 - [ ] Full payment flow (waiting on HSP QA IP allowlist)
-- [ ] Site, live demo, proof page
+- [x] Site, live demo page, proof page (web/), agent server (agent/server.ts)
 - [ ] Mainnet deploy
 
 ## AI use
