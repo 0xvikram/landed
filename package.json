@@ -4,7 +4,8 @@
   "description": "Airline payment agent that pays delay compensation via HSP, with receipts on HSK Chain",
   "scripts": {
     "test": "hardhat test",
-    "inspect": "tsx agent/inspect.ts"
+    "inspect": "tsx agent/inspect.ts",
+    "test:agent": "tsx --test agent/*.test.ts"
   },
   "keywords": [],
   "author": "",
