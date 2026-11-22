@@ -86,7 +86,7 @@
     el.style.display = "block";
     if (r.ok) {
       el.innerHTML = `<div class="eyebrow">Paid</div><div class="paid" style="margin-top:8px">$${r.amountUsd}</div>
-        <p>HSP payment ${txLink(r.chainId, r.settlementTx)} · receipt on HSK Chain <a href="${cfg.explorer}/tx/${r.receiptTx}" target="_blank" rel="noopener">${short(r.receiptTx)}</a></p>
+        <p>HSP payment ${txLink(r.chainId, r.settlementTx)} · receipt on ${cfg.receipts.label} <a href="${cfg.receipts.explorer}/tx/${r.receiptTx}" target="_blank" rel="noopener">${short(r.receiptTx)}</a></p>
         <p class="note">Try "Land the flight" again with the same booking: the contract refuses a second payout.</p>`;
     } else {
       el.innerHTML = `<div class="eyebrow">${r.pending ? "Pending" : "Not paid"}</div><p>${r.reason}</p>`;

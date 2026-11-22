@@ -16,7 +16,8 @@ Flight delays in the demo are simulated and labelled as such. HSP's hackathon (Q
 Work in progress (started 21 Nov 2026). Site: https://landed-delay.vercel.app
 - [x] `contracts/LandedPolicy.sol` + tests (`npx hardhat test`)
 - [x] HSP MCP client (`agent/hsp.ts`) and reachability check (`npx tsx agent/inspect.ts`)
-- [ ] Full payment flow (waiting on HSP QA IP allowlist)
+- [x] Full payout run on HSK testnet with an HSP stand-in (`npx tsx agent/testnet-run.ts`; contract `0x2b44008428ce6ee69c0b44aec4daef74b22c5a71`)
+- [ ] Real HSP payments (waiting on HSP QA IP allowlist)
 - [x] Site, live demo page, proof page (web/), agent server (agent/server.ts)
 - [ ] Mainnet deploy
 
