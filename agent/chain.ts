@@ -77,6 +77,13 @@ export const policyAbi = [
     ],
     outputs: [],
   },
+  { type: "error", name: "NotOwner", inputs: [] },
+  { type: "error", name: "NotAgent", inputs: [] },
+  { type: "error", name: "BadPolicy", inputs: [] },
+  { type: "error", name: "AlreadyClaimed", inputs: [{ name: "bookingKey", type: "bytes32" }] },
+  { type: "error", name: "NotReserved", inputs: [{ name: "bookingKey", type: "bytes32" }] },
+  { type: "error", name: "NotEligible", inputs: [{ name: "delayMinutes", type: "uint32" }] },
+  { type: "error", name: "BadInput", inputs: [] },
 ] as const;
 
 export function policyOnChain(opts: { address: Address; writerKey: Hex; rpcUrl?: string; testnet?: boolean }): PolicyLike {
