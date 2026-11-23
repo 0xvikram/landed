@@ -53,7 +53,7 @@ If the payment fails before it is sent, the booking is released so the passenger
 ## Status and honesty notes
 - The contract has 7 Hardhat tests and the payout agent has 7 tests, covering the happy path, a duplicate claim, a short delay, a decline, a failed payment, errors before and after submit, and a timeout.
 - On HSK testnet, a full run wrote a real reserve and settle and refused a second claim (`npx tsx agent/testnet-run.ts`).
-- **[TODO, update before submitting]** HSP's QA environment needs our server's IP on its allowlist. We requested it in the hackathon Telegram on 21 Nov. Until access is granted, the testnet run uses a stand-in for HSP that returns the same fields. Its receipts are marked with chain id 999999 and shown as "Stand-in, not a real payment" on the proof page.
+- **[TODO, update before submitting]** HSP's QA environment needs our server's IP on its allowlist. We submitted it on the organisers' allowlist sheet on 24 Nov. The live demo can run with `HSP_MODE=standin`, which labels every HSP step "stand-in" on the page; the demo video was recorded that way and says so. We requested it in the hackathon Telegram on 21 Nov. Until access is granted, the testnet run uses a stand-in for HSP that returns the same fields. Its receipts are marked with chain id 999999 and shown as "Stand-in, not a real payment" on the proof page.
 - Flight delays in the demo are simulated and labelled as such. HSP's QA environment settles on test networks.
 
 ## What's next
