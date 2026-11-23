@@ -1,6 +1,7 @@
 // HSP Agentic Payment client: the 8 MCP tools from the official hackathon guide
 // (https://dorahacks.io/hackathon/hskchainindia/agentic-payment-guide, rev 2026-10-30).
 // HSP QA only answers allowlisted IPs. Do not retry a blocked endpoint in a loop.
+import "./ipv4.js"; // must run before any connection is opened
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
