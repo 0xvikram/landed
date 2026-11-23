@@ -16,6 +16,7 @@
   ];
   let flight = flights[0];
   let online = false;
+  let standIn = false; // agent runs with the HSP stand-in: payment steps are simulated and labelled
 
   const randRef = () => Array.from({ length: 6 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join("");
   $("booking").value = randRef();
@@ -50,21 +51,24 @@
   }
   const short = (h) => (h ? h.slice(0, 10) + "…" + h.slice(-6) : "");
   const txLink = (chainId, h) => {
+    if (Number(chainId) === cfg.standInChainId) return `<span class="pill warn">Stand-in, not a real payment</span>`;
     const base = cfg.settlementExplorers[Number(chainId)];
     return base ? `<a href="${base}${h}" target="_blank" rel="noopener">${short(h)}</a>` : short(h);
   };
 
   const STEP_TEXT = {
     checked: (s) => `Rule checked: ${hm(s.delayMinutes)} late pays $${s.amountUsd}`,
-    reserved: (s) => [`Booking locked on HSK Chain`, short(s.tx)],
+    reserved: (s) => [`Booking locked on ${cfg.receipts.label}`, short(s.tx)],
     order: (s) => [`HSP order created`, `flow ${s.flowId}`],
     prepared: (s) => [`HSP quote locked`, `${s.tokenTotalRaw} raw units`],
     signed: () => `Payment authorisation signed by the airline's agent`,
     submitted: () => `Submitted to HSP's gateway`,
     status: (s) => `HSP status: ${s.status.replace("payment-", "")}`,
-    settled: (s) => [`Receipt written on HSK Chain`, short(s.tx)],
+    settled: (s) => [`Receipt written on ${cfg.receipts.label}`, short(s.tx)],
     released: (s) => [`Booking released`, s.reason],
   };
+
+  const HSP_STEPS = new Set(["order", "prepared", "signed", "submitted", "status"]);
 
   function showApproval(id, a) {
     const box = $("approval");
@@ -119,7 +123,8 @@
         }
         const t = STEP_TEXT[s.step]?.(s);
         if (!t) return;
-        const [text, detail] = Array.isArray(t) ? t : [t, ""];
+        let [text, detail] = Array.isArray(t) ? t : [t, ""];
+        if (standIn && HSP_STEPS.has(s.step)) text += " <span class=\"pill warn\">stand-in</span>";
         addLine(text, s.step === "released" ? "fail" : "now", detail);
       };
       es.onerror = () => { es.close(); $("land").disabled = false; addLine("Lost connection to the agent", "fail"); };
@@ -140,8 +145,11 @@
       if (h.flights?.length) { flights = h.flights; flight = flights[0]; renderFlights(); }
       if (h.demoWallet) $("wallet").value = h.demoWallet;
       online = !!h.hsp;
-      $("status").className = "banner" + (online ? "" : " warn");
-      $("status").textContent = online
+      standIn = h.mode === "standin";
+      $("status").className = "banner" + (online && !standIn ? "" : " warn");
+      $("status").textContent = standIn
+        ? `Stand-in mode: HSP access for our server is pending, so the payment steps are simulated and marked "stand-in". The booking lock and the receipt are real ${cfg.receipts.label} transactions.`
+        : online
         ? "Airline agent online. Payments run on HSP's test network; receipts go to HSK Chain."
         : `Agent reachable, but HSP is not answering yet (${h.hspDetail || "unknown"}).`;
       $("land").disabled = !online;

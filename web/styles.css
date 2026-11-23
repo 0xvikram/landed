@@ -141,6 +141,7 @@ footer a { text-decoration: none; margin-right: 18px; }
 .pill { font: 600 12px/1 var(--mono); padding: 6px 8px; border-radius: 999px; background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
 .pill.late { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
 .pill.wait { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.pill.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
 .log { list-style: none; margin: 0; padding: 0; }
 .log li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
 .log li .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 7px; background: var(--line); }

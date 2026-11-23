@@ -1,4 +1,5 @@
 // Airline agent server for the live demo. Must run on an HSP-allowlisted IP.
+// HSP_MODE=standin runs the same flow with a labelled stand-in for HSP (no real payment) while QA access is pending.
 // Run: npx tsx agent/server.ts   (reads .env: AGENT_PAYER_KEY, RECEIPT_WRITER_KEY, POLICY_ADDRESS, ...)
 import "dotenv/config";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -7,11 +8,13 @@ import { isAddress, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { Hsp, healthCheck } from "./hsp.js";
 import { policyOnChain } from "./chain.js";
+import { standInHsp } from "./standin.js";
 import { payDelayCompensation, type Approval, type Claim, type Step } from "./payout.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:5500,http://127.0.0.1:5500").split(",");
 const MERCHANT = process.env.HSP_MERCHANT_NAME ?? "Landed";
+const STAND_IN = process.env.HSP_MODE === "standin";
 const DEMO_WALLET = (process.env.DEMO_PASSENGER_WALLET ?? "") as Address;
 
 export const FLIGHTS = [
@@ -49,11 +52,11 @@ async function startClaim(claim: Claim) {
   runs.set(id, run);
   busy = true;
   (async () => {
-    const hsp = new Hsp();
+    const hsp = STAND_IN ? null : new Hsp();
     try {
-      await hsp.connect();
+      await hsp?.connect();
       const result = await payDelayCompensation(claim, {
-        hsp,
+        hsp: hsp ?? standInHsp(),
         policy,
         signer: { address: signer.address, signTypedData: (t) => signer.signTypedData(t as any) },
         merchantName: MERCHANT,
@@ -72,7 +75,7 @@ async function startClaim(claim: Claim) {
     } finally {
       run.done = true;
       busy = false;
-      await hsp.close().catch(() => {});
+      await hsp?.close().catch(() => {});
       for (const res of run.listeners) res.end();
     }
   })();
@@ -124,8 +127,8 @@ export const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", "http://x");
   try {
     if (req.method === "GET" && url.pathname === "/api/health") {
-      const h = await healthCheck().catch((e) => ({ ok: false, detail: String(e) }));
-      return json(res, 200, { hsp: h.ok, hspDetail: h.detail, flights: FLIGHTS, demoWallet: DEMO_WALLET || null, busy });
+      const h = STAND_IN ? { ok: true, detail: "stand-in" } : await healthCheck().catch((e) => ({ ok: false, detail: String(e) }));
+      return json(res, 200, { hsp: h.ok, hspDetail: h.detail, mode: STAND_IN ? "standin" : "hsp", flights: FLIGHTS, demoWallet: DEMO_WALLET || null, busy });
     }
     if (req.method === "POST" && url.pathname === "/api/claims") {
       if (busy) return json(res, 429, { error: "Another payout is running. Try again in a minute." });
@@ -167,5 +170,5 @@ export const server = createServer(async (req, res) => {
 });
 
 if (process.argv[1]?.endsWith("server.ts")) {
-  server.listen(PORT, () => console.log(`Landed airline agent on http://localhost:${PORT} (allowed origins: ${ORIGINS.join(", ")})`));
+  server.listen(PORT, () => console.log(`Landed airline agent on http://localhost:${PORT}${STAND_IN ? " [HSP STAND-IN: no real payments]" : ""} (allowed origins: ${ORIGINS.join(", ")})`));
 }
