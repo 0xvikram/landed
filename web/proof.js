@@ -58,11 +58,26 @@
     $("contract").innerHTML = `<a href="${net.explorer}/address/${net.policy}" target="_blank" rel="noopener">${net.policy}</a>`;
     rows.innerHTML = `<tr><td colspan="5" class="no">Loading…</td></tr>`;
     try {
-      const logs = await rpc(net, "eth_getLogs", [{ address: net.policy, topics: [TOPIC], fromBlock: "0x" + Number(net.fromBlock || 0).toString(16), toBlock: "latest" }]);
+      // The public RPC caps eth_getLogs at about 5,000 blocks per query, so read the range in windows, a few at a time.
+      const head = parseInt(await rpc(net, "eth_blockNumber", []), 16);
+      const STEP = 4_999;
+      const hex = (n) => "0x" + n.toString(16);
+      const windows = [];
+      for (let from = Number(net.fromBlock || 0); from <= head; from += STEP + 1) windows.push([from, Math.min(from + STEP, head)]);
+      const getWindow = async ([f, t], tries = 3) => {
+        try { return await rpc(net, "eth_getLogs", [{ address: net.policy, topics: [TOPIC], fromBlock: hex(f), toBlock: hex(t) }]); }
+        catch (e) { if (tries <= 1) throw e; await new Promise((r) => setTimeout(r, 400)); return getWindow([f, t], tries - 1); }
+      };
+      const found = new Array(windows.length);
+      let next = 0;
+      await Promise.all(Array.from({ length: 6 }, async () => { while (next < windows.length) { const i = next++; found[i] = await getWindow(windows[i]); } }));
+      const logs = found.flat();
       if (id !== loadId) return;
       const items = logs.map(decode).reverse();
-      $("count").textContent = items.length;
-      $("total").textContent = "$" + (items.reduce((a, x) => a + x.cents, 0) / 100).toFixed(2);
+      // Totals count real payouts only; stand-in rows stay listed but moved no money.
+      const real = items.filter((x) => x.chainId !== cfg.standInChainId);
+      $("count").textContent = real.length;
+      $("total").textContent = "$" + (real.reduce((a, x) => a + x.cents, 0) / 100).toFixed(2);
       if (!items.length) {
         rows.innerHTML = `<tr><td colspan="5" class="no">No payouts yet.</td></tr>`;
         return;
