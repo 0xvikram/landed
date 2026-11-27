@@ -33,14 +33,15 @@
   function payCell(x) {
     if (x.chainId === cfg.standInChainId) return `<span class="pill wait" title="Written by the HSP stand-in while HSP access is pending">Stand-in, not a real payment</span>`;
     const base = cfg.settlementExplorers[x.chainId];
-    return base ? `<a href="${base}${x.settlementTx}" target="_blank" rel="noopener">${short(x.settlementTx)}</a>` : short(x.settlementTx);
+    const link = base ? `<a href="${base}${x.settlementTx}" target="_blank" rel="noopener">${short(x.settlementTx)}</a>` : short(x.settlementTx);
+    return `${link} <span class="pill ok" title="Paid through HashKey Settlement Platform (QA gateway, test funds)">HSP</span>`;
   }
 
   function setTabs() {
     for (const k of Object.keys(cfg.networks)) $("net-" + k).setAttribute("aria-selected", String(k === netKey));
     const note = $("netNote");
     note.style.display = netKey === "testnet" ? "block" : "none";
-    note.textContent = "Test network. These receipts come from our end-to-end test runs. Until HashKey Settlement Platform approves the agent's server, the payment step uses a stand-in, marked on each row.";
+    note.textContent = "Test network. Rows marked HSP were paid through HashKey Settlement Platform's QA gateway with test USDC; the payment link opens the transfer on its network. Older rows from before HSP access was granted used a stand-in and are marked.";
   }
 
   async function load() {

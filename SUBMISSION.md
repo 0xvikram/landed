@@ -53,7 +53,8 @@ If the payment fails before it is sent, the booking is released so the passenger
 ## Status and honesty notes
 - The contract has 7 Hardhat tests and the payout agent has 7 tests, covering the happy path, a duplicate claim, a short delay, a decline, a failed payment, errors before and after submit, and a timeout.
 - On HSK testnet, a full run wrote a real reserve and settle and refused a second claim (`npx tsx agent/testnet-run.ts`).
-- **[TODO, update before submitting]** HSP's QA environment needs our server's IP on its allowlist. We submitted it on the organisers' allowlist sheet on 24 Nov. The live demo can run with `HSP_MODE=standin`, which labels every HSP step "stand-in" on the page; the demo video was recorded that way and says so. We requested it in the hackathon Telegram on 21 Nov. Until access is granted, the testnet run uses a stand-in for HSP that returns the same fields. Its receipts are marked with chain id 999999 and shown as "Stand-in, not a real payment" on the proof page.
+- **Real HSP payment, 27 Nov 2026.** HSP allowlisted our IP and `npx tsx agent/hsp-run.ts` ran one full payout through the HSP QA gateway: order `b2df6155-ab2d-455d-bf6e-d2fa2f7b5c69`, quote locked, two approvals, EIP-3009 signature, `payment-safe`. HSP moved 10.002 USDC (the $10 tier plus a 0.002 USDC fee) from the airline agent wallet to the passenger on Base Sepolia, tx [0x9488b7ae…160a](https://sepolia.basescan.org/tx/0x9488b7ae400f1850d7e59afb88b31268dc699412665e382004a3d32aba91160a). LandedPolicy then wrote the receipt on HSK testnet, tx [0x594226d2…60cf](https://testnet-explorer.hskchain.net/tx/0x594226d27c5fafbc763cf56b7d5632b7bcda483e4e9d06cb668a74ff788360cf). The proof page marks it "HSP".
+- Earlier receipts from before HSP access (21–26 Nov) came from a stand-in that returns the same fields. They carry chain id 999999 and the proof page shows them as "Stand-in, not a real payment". The live demo can still run in that labelled mode (`HSP_MODE=standin`) if the server is not on an allowlisted IP.
 - Flight delays in the demo are simulated and labelled as such. HSP's QA environment settles on test networks.
 
 ## What's next
@@ -68,7 +69,7 @@ Solo: 0xvikram. Built with Claude Code (Anthropic) as a coding assistant.
 
 # Demo video script (target 2:30, AI voice)
 
-The video uses real screens only. Lines marked **[HSP]** need HSP access. Until then, those shots use the testnet run and say "stand-in" on screen.
+The video uses real screens only. Lines marked **[HSP]** show the real HSP payment from 27 Nov (Base Sepolia transfer + HSK testnet receipt).
 
 | # | Time | Screen | Voice |
 |---|---|---|---|

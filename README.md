@@ -17,7 +17,7 @@ Work in progress (started 21 Nov 2026). Site: https://landed-delay.vercel.app
 - [x] `contracts/LandedPolicy.sol` + tests (`npx hardhat test`)
 - [x] HSP MCP client (`agent/hsp.ts`) and reachability check (`npx tsx agent/inspect.ts`)
 - [x] Full payout run on HSK testnet with an HSP stand-in (`npx tsx agent/testnet-run.ts`; contract `0x2b44008428ce6ee69c0b44aec4daef74b22c5a71`)
-- [ ] Real HSP payments (waiting on HSP QA IP allowlist)
+- [x] Real HSP payment through the QA gateway: $10 paid on Base Sepolia ([tx](https://sepolia.basescan.org/tx/0x9488b7ae400f1850d7e59afb88b31268dc699412665e382004a3d32aba91160a)), receipt on HSK testnet ([tx](https://testnet-explorer.hskchain.net/tx/0x594226d27c5fafbc763cf56b7d5632b7bcda483e4e9d06cb668a74ff788360cf)) (`npx tsx agent/hsp-run.ts`)
 - [x] Site, live demo page, proof page (web/), agent server (agent/server.ts)
 - [ ] Mainnet deploy
 

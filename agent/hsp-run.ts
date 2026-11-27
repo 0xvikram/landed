@@ -3,6 +3,7 @@
 //
 //   npx tsx agent/hsp-run.ts --dry     order + locked quote, then decline before signing (no money moves)
 //   npx tsx agent/hsp-run.ts           the real payment (asks y/N twice)
+//   npx tsx agent/hsp-run.ts --yes     the real payment, when a human already approved these exact amounts
 //
 // Needs in .env: RECEIPT_WRITER_KEY, AGENT_PAYER_KEY, POLICY_ADDRESS. Optional: PAY_NETWORK (default base-sepolia),
 // PASSENGER (pay_to, default DEMO_PASSENGER_WALLET or the receipt writer's address).
@@ -16,6 +17,7 @@ import { payDelayCompensation, type Approval } from "./payout.js";
 import { pickToken } from "./token.js";
 
 const DRY = process.argv.includes("--dry");
+const YES = process.argv.includes("--yes");
 const need = (k: string) => { const v = process.env[k]; if (!v) throw new Error(`${k} is not set`); return v; };
 process.env.PAY_NETWORK ||= "base-sepolia";
 
@@ -58,6 +60,7 @@ const approve = async (a: Approval) => {
     return false;
   }
   if (DRY) { console.log("  --dry: declining here, nothing is signed."); return false; }
+  if (YES) { console.log("  --yes: approved in advance by the operator."); return true; }
   return (await rl.question("  Approve? [y/N] ")).trim().toLowerCase() === "y";
 };
 
