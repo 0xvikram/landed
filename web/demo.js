@@ -255,7 +255,8 @@
     if (run.form.wallet) $("wallet").value = run.form.wallet;
     if (run.mode === "a2a") $("paxAddr").textContent = run.form.passengerAgent;
     $("intakeOut").innerHTML = "";
-    document.querySelector(".app").scrollIntoView({ behavior: "smooth", block: "start" });
+    // On narrow screens the form sits above the log: jump to the agent's log so the replay is visible.
+    (innerWidth < 900 ? $("log").closest(".card") : document.querySelector(".app")).scrollIntoView({ behavior: "smooth", block: "start" });
 
     addLine(`${esc(run.form.flight)} landed ${hm(run.form.delayMinutes)} late`, "done", "", run.events[0]?.at);
     if (run.mode === "a2a" && run.signedAt) addLine(`Passenger agent signed a claim (EIP-712) with its wallet <span class="pill">${esc(short(run.form.passengerAgent))}</span>`, "done", "the booking reference stays with the passenger: only its hash is signed", run.signedAt);
