@@ -26,10 +26,10 @@ Work in progress (started 21 Nov 2026). Site: https://landed-delay.vercel.app
 - [x] Real HSP payment through the QA gateway: $10 paid on Base Sepolia ([tx](https://sepolia.basescan.org/tx/0x9488b7ae400f1850d7e59afb88b31268dc699412665e382004a3d32aba91160a)), receipt on HSK testnet ([tx](https://testnet-explorer.hskchain.net/tx/0x594226d27c5fafbc763cf56b7d5632b7bcda483e4e9d06cb668a74ff788360cf)) (`npx tsx agent/hsp-run.ts`)
 - [x] Site, live demo page, proof page (web/), agent server (agent/server.ts)
 - [x] `LandedPolicyV2` with agent-to-agent claims, deployed and source-verified on HSK testnet: [`0xac5f455d7e59933781680b4fb0217e111f4961ef`](https://testnet-explorer.hskchain.net/address/0xac5f455d7e59933781680b4fb0217e111f4961ef#code)
-- [x] Passenger agent with its own wallet, `/api/a2a/claims`, demo "Passenger agent" panel; A2A dry run through real HSP (order + quote, declined, released)
+- [x] Passenger agent with its own wallet, `/api/a2a/claims`, demo "Passenger agent" panel; A2A dry run, then a paid A2A run through real HSP
 - [x] Replay mode on the demo page when the agent is offline
-- [x] AI intake (Groq) with a mocked-LLM test suite; waiting for a key
-- [ ] A paid A2A run (needs a little more test USDC in the payer wallet)
+- [x] AI intake (Groq `openai/gpt-oss-120b`), live, with a mocked-LLM test suite
+- [x] Real A2A payment: the passenger agent signed, HSP paid it $10 on Base Sepolia ([tx](https://sepolia.basescan.org/tx/0x508af3a1fbc2594814a0d7da08528df3aafd5349bb4130a3049f34f30f2e398b)), and the receipt is on V2 ([tx](https://testnet-explorer.hskchain.net/tx/0x4cae2562efc31a5bc90721a8faaaafa428269d0f7b851831b94bbe494cfb2d4e))
 - [ ] Mainnet deploy
 
 ## AI use

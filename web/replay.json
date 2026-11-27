@@ -1,6 +1,162 @@
 {
- "generated": "2026-11-27T10:03:53.648Z",
+ "generated": "2026-11-27T10:22:37.381Z",
  "runs": [
+  {
+   "id": "2026-11-27-a2a",
+   "mode": "a2a",
+   "button": "Replay: passenger agent (A2A), 27 Nov",
+   "banner": "Replay of a real HSP payment made on 27 Nov 2026: the passenger's agent signed the claim, the airline's agent verified it and paid that wallet ($10.00 test USDC on Base Sepolia). The links are live.",
+   "source": "The airline agent server's own event log for this run (a2a-paid-2026-11-27-a5c3472c.jsonl).",
+   "policy": {
+    "version": "v2",
+    "address": "0xac5f455d7e59933781680b4fb0217e111f4961ef"
+   },
+   "form": {
+    "flight": "DA117",
+    "date": "2026-12-01",
+    "delayMinutes": 134,
+    "bookingRef": "(hashed)",
+    "passengerAgent": "0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA"
+   },
+   "signedAt": "2026-11-27T10:21:24.304Z",
+   "events": [
+    {
+     "at": "2026-11-27T10:21:24.304Z",
+     "step": "start",
+     "mode": "hsp",
+     "policy": "0xac5f455d7e59933781680b4fb0217e111f4961ef",
+     "flight": "DA117",
+     "date": "2026-12-01",
+     "delayMinutes": 134,
+     "passenger": "0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA",
+     "a2a": true
+    },
+    {
+     "at": "2026-11-27T10:21:24.304Z",
+     "step": "claim",
+     "claim": {
+      "flight": "DA117",
+      "date": "2026-12-01",
+      "bookingKey": "0x49e82f20380c8fc6ad4c338d545b5c70226ccf7dcad2ec4bc660f909fd3d4e37",
+      "delayMinutes": 134,
+      "payTo": "0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA",
+      "deadline": 1795776684,
+      "nonce": "99836129507390263905625926466912697729"
+     },
+     "signature": "0xdf86f6e6648dd88d0f2fe7e93d3dc46ea0981005ae6e21396218c2bda5a139c710b88d88b3c5aae13328ac38dc59d7918cd485a26e2130a3f5645109394369401b",
+     "signer": "0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA",
+     "intake": {
+      "model": "openai/gpt-oss-120b",
+      "promptSha256": "646174858c1d3b4a5f18e9412c4efc1c30ced0aa616bc28fd010b6ce2ad7e6c6"
+     }
+    },
+    {
+     "at": "2026-11-27T10:21:27.975Z",
+     "step": "checked",
+     "amountUsd": "10.00",
+     "delayMinutes": 134
+    },
+    {
+     "at": "2026-11-27T10:21:30.308Z",
+     "step": "reserved",
+     "tx": "0xf6d23e9a54806e6b114f66a4e88e6f1c3242556acb78aab9ce7a79ca09641032",
+     "viaClaim": true
+    },
+    {
+     "at": "2026-11-27T10:21:31.991Z",
+     "step": "order",
+     "flowId": "a5c3472c-dff5-4d5a-ac3f-26b0be831218",
+     "paymentRequestId": "landed-49e82f20380c8fc6"
+    },
+    {
+     "at": "2026-11-27T10:21:34.242Z",
+     "step": "prepared",
+     "tokenTotalRaw": "10001000",
+     "quoteExpiresAt": "2026-11-27T10:26:33Z"
+    },
+    {
+     "at": "2026-11-27T10:21:34.243Z",
+     "step": "approval",
+     "approval": {
+      "payTo": "0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA",
+      "payer": "0x92742A4C1E116281808ECFeb0Cc443B083B34B7e",
+      "amountUsd": "10.00",
+      "tokenTotalRaw": "10001000",
+      "stage": "sign",
+      "network": "base-sepolia",
+      "chainId": 84532
+     }
+    },
+    {
+     "at": "2026-11-27T10:21:34.884Z",
+     "step": "approved",
+     "stage": "sign",
+     "ok": true
+    },
+    {
+     "at": "2026-11-27T10:21:34.885Z",
+     "step": "signed"
+    },
+    {
+     "at": "2026-11-27T10:21:36.326Z",
+     "step": "approval",
+     "approval": {
+      "payTo": "0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA",
+      "payer": "0x92742A4C1E116281808ECFeb0Cc443B083B34B7e",
+      "amountUsd": "10.00",
+      "tokenTotalRaw": "10001000",
+      "stage": "submit",
+      "network": "base-sepolia",
+      "chainId": 84532
+     }
+    },
+    {
+     "at": "2026-11-27T10:21:36.704Z",
+     "step": "approved",
+     "stage": "submit",
+     "ok": true
+    },
+    {
+     "at": "2026-11-27T10:21:37.741Z",
+     "step": "submitted"
+    },
+    {
+     "at": "2026-11-27T10:21:39.545Z",
+     "step": "status",
+     "status": "payment-submitted"
+    },
+    {
+     "at": "2026-11-27T10:21:56.254Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T10:22:13.127Z",
+     "step": "status",
+     "status": "payment-safe"
+    },
+    {
+     "at": "2026-11-27T10:22:17.200Z",
+     "step": "settled",
+     "tx": "0x4cae2562efc31a5bc90721a8faaaafa428269d0f7b851831b94bbe494cfb2d4e",
+     "settlementTx": "0x508af3a1fbc2594814a0d7da08528df3aafd5349bb4130a3049f34f30f2e398b",
+     "chainId": "84532"
+    },
+    {
+     "at": "2026-11-27T10:22:17.201Z",
+     "step": "done",
+     "result": {
+      "ok": true,
+      "bookingKey": "0x49e82f20380c8fc6ad4c338d545b5c70226ccf7dcad2ec4bc660f909fd3d4e37",
+      "amountUsd": "10.00",
+      "settlementTx": "0x508af3a1fbc2594814a0d7da08528df3aafd5349bb4130a3049f34f30f2e398b",
+      "chainId": "84532",
+      "receiptTx": "0x4cae2562efc31a5bc90721a8faaaafa428269d0f7b851831b94bbe494cfb2d4e",
+      "flowId": "a5c3472c-dff5-4d5a-ac3f-26b0be831218"
+     }
+    }
+   ]
+  },
   {
    "id": "2026-11-27-M2V9QL",
    "mode": "form",

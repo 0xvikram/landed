@@ -12,6 +12,7 @@ async function receipt(chainId, hash) {
   return r.result;
 }
 
+const NET = { 11155111: "Ethereum Sepolia", 84532: "Base Sepolia" };
 const ist = (t) => `2026-11-27T${t}+05:30`;
 const m2v9ql = (() => {
   const ev = (t, e) => ({ at: new Date(ist(t)).toISOString(), ...e });
@@ -62,7 +63,7 @@ function fromLog(path) {
     id: `${start.at.slice(0, 10)}-a2a`,
     mode: "a2a",
     button: `Replay: passenger agent (A2A), ${day.replace(/ \d{4}$/, "")}`,
-    banner: `Replay of a real HSP payment made on ${day}: the passenger's agent signed the claim, the airline's agent verified it and paid that wallet ($${r.amountUsd} test USDC on Ethereum Sepolia). The links are live.`,
+    banner: `Replay of a real HSP payment made on ${day}: the passenger's agent signed the claim, the airline's agent verified it and paid that wallet ($${r.amountUsd} test USDC on ${NET[Number(r.chainId)] ?? "chain " + r.chainId}). The links are live.`,
     source: `The airline agent server's own event log for this run (${path.split("/").pop()}).`,
     policy: { version: "v2", address: start.policy },
     form: { flight: start.flight, date: start.date, delayMinutes: start.delayMinutes, bookingRef: "(hashed)", passengerAgent: claim.claim.payTo },

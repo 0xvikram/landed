@@ -140,7 +140,8 @@
       return addLine(s.ok ? (s.stage === "sign" ? "Approved by a person at the airline: sign" : "Approved by a person at the airline: send") : `Declined at "${esc(s.stage)}"`, s.ok ? "done" : "fail", "", s.at);
     }
     if (s.step === "claim") {
-      addLine(`Airline agent received the passenger agent's signed claim`, "done", "", s.at, claimJson(s.claim, s.signature));
+      const ai = s.intake?.model ? `fields read from the passenger's message by ${esc(s.intake.model)} (prompt sha256 ${esc(String(s.intake.promptSha256).slice(0, 12))}…), confirmed by the passenger before signing` : "";
+      addLine(`Airline agent received the passenger agent's signed claim`, "done", ai, s.at, claimJson(s.claim, s.signature));
       return addLine(`Signature verified: payTo = signer <span class="pill">${esc(short(s.signer))}</span>`, "done", "", s.at);
     }
     if (s.step === "done") {

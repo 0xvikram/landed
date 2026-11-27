@@ -4,7 +4,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
-export const INTAKE_MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+export const INTAKE_MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 export const INTAKE_PROMPT = readFileSync(new URL("./prompts/intake.md", import.meta.url), "utf8");
 export const INTAKE_PROMPT_SHA256 = createHash("sha256").update(INTAKE_PROMPT).digest("hex");
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
