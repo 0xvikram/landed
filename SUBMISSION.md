@@ -18,7 +18,7 @@ Track 2: Agent Payments & A2A Settlement
 - Live demo: https://landed-delay.vercel.app/demo.html
 - Proof page (reads the chain directly): https://landed-delay.vercel.app/proof.html
 - Code: https://github.com/0xvikram/landed
-- Video: ~/Videos/landed-demo.mp4 (local for now; YouTube link to come)
+- Video (2:18, AI voice): https://youtu.be/TE_I-rVXaNY
 - Mainnet contract (HSK Chain, 177): **[TODO]**
 - Testnet contract (HSK testnet, 133): [0x2b44008428ce6ee69c0b44aec4daef74b22c5a71](https://testnet-explorer.hskchain.net/address/0x2b44008428ce6ee69c0b44aec4daef74b22c5a71)
 
