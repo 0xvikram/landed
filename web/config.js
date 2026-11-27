@@ -13,8 +13,12 @@ window.LANDED = {
     },
     testnet: {
       label: "HSK testnet",
-      policy: "0x2b44008428ce6ee69c0b44aec4daef74b22c5a71",
-      fromBlock: 36072224,
+      // LandedPolicyV2: same rule + agent-to-agent claims (reserveWithClaim). Verified on the explorer.
+      policy: "0xac5f455d7e59933781680b4fb0217e111f4961ef",
+      fromBlock: 36293386,
+      version: "v2",
+      // Earlier contracts whose receipts stay listed on the proof page.
+      older: [{ policy: "0x2b44008428ce6ee69c0b44aec4daef74b22c5a71", fromBlock: 36072224, version: "v1" }],
       rpc: "https://testnet.hsk.xyz",
       explorer: "https://testnet-explorer.hskchain.net",
     },

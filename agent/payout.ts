@@ -3,13 +3,16 @@
 // query_payment) -> settle on HSK Chain, or release the booking if the payment fails.
 import type { Address, Hex } from "viem";
 import { bookingKey, centsToUsd, flightKey } from "./keys.js";
+import type { SignedClaim } from "./claim.js";
 
 export interface Claim {
   flight: string; // "BA117"
   date: string; // "2026-12-01"
-  bookingRef: string; // stays off chain, only its hash is stored
+  bookingRef?: string; // stays off chain, only its hash is stored (absent for A2A: the passenger agent sends only the hash)
   passenger: Address; // where the money goes
   delayMinutes: number; // from the (simulated) flight status
+  /** A2A: the passenger agent's EIP-712 claim. Reserved with reserveWithClaim, so only its signer can be paid. */
+  signed?: { claim: SignedClaim; signature: Hex };
 }
 
 /** Subset of the HSP MCP client the agent needs (real one is agent/hsp.ts). */
@@ -22,6 +25,7 @@ export interface PolicyLike {
   quote(delayMinutes: number): Promise<bigint>;
   status(bookingKey: Hex): Promise<number>; // 0 none, 1 reserved, 2 paid
   reserve(bookingKey: Hex, flightKey: Hex, passenger: Address, delayMinutes: number): Promise<Hex>;
+  reserveWithClaim?(claim: SignedClaim, signature: Hex): Promise<Hex>;
   settle(bookingKey: Hex, chainId: bigint, settlementTx: Hex): Promise<Hex>;
   release(bookingKey: Hex, reason: string): Promise<Hex>;
 }
@@ -37,11 +41,13 @@ export interface Approval {
   amountUsd: string;
   tokenTotalRaw: string;
   stage: "sign" | "submit";
+  network: string;
+  chainId: number;
 }
 
 export type Step =
   | { step: "checked"; amountUsd: string; delayMinutes: number }
-  | { step: "reserved"; tx: Hex }
+  | { step: "reserved"; tx: Hex; viaClaim?: boolean }
   | { step: "order"; flowId: string; paymentRequestId: string }
   | { step: "prepared"; tokenTotalRaw: string; quoteExpiresAt?: string }
   | { step: "signed" }
@@ -73,7 +79,11 @@ const PENDING = ["payment-submitted", "payment-verified", "payment-processing", 
 export async function payDelayCompensation(claim: Claim, d: PayoutDeps): Promise<PayoutResult> {
   const emit = d.onStep ?? (() => {});
   const sleep = d.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
-  const bk = bookingKey(claim.flight, claim.date, claim.bookingRef);
+  const s = claim.signed;
+  if (s && (s.claim.payTo.toLowerCase() !== claim.passenger.toLowerCase() || s.claim.delayMinutes !== claim.delayMinutes))
+    throw new Error("signed claim does not match the payout request");
+  if (!s && !claim.bookingRef) throw new Error("bookingRef is required without a signed claim");
+  const bk = s ? s.claim.bookingKey : bookingKey(claim.flight, claim.date, claim.bookingRef!);
   const fk = flightKey(claim.flight, claim.date);
 
   // 1. Rule check, from the published policy (code decides the amount, never a model).
@@ -84,7 +94,12 @@ export async function payDelayCompensation(claim: Claim, d: PayoutDeps): Promise
   emit({ step: "checked", amountUsd, delayMinutes: claim.delayMinutes });
 
   // 2. Reserve first so a second claim can never be paid.
-  emit({ step: "reserved", tx: await d.policy.reserve(bk, fk, claim.passenger, claim.delayMinutes) });
+  if (s) {
+    if (!d.policy.reserveWithClaim) throw new Error("this policy contract does not accept signed claims (needs LandedPolicyV2)");
+    emit({ step: "reserved", tx: await d.policy.reserveWithClaim(s.claim, s.signature), viaClaim: true });
+  } else {
+    emit({ step: "reserved", tx: await d.policy.reserve(bk, fk, claim.passenger, claim.delayMinutes) });
+  }
 
   let flowId: string | undefined;
   let submitted = false; // once true, money may have moved: never release the booking on error
@@ -111,7 +126,7 @@ export async function payDelayCompensation(claim: Claim, d: PayoutDeps): Promise
     const prep = await d.hsp.call("prepare_payment", { flow_id: flowId, payer: d.signer.address, protocol: t.protocol });
     emit({ step: "prepared", tokenTotalRaw: String(prep.token_total_raw), quoteExpiresAt: prep.quote_expires_at });
     const ask = (stage: Approval["stage"]) =>
-      d.approve({ payTo: claim.passenger, payer: d.signer.address, amountUsd, tokenTotalRaw: String(prep.token_total_raw), stage });
+      d.approve({ payTo: claim.passenger, payer: d.signer.address, amountUsd, tokenTotalRaw: String(prep.token_total_raw), stage, network: t.network, chainId: t.chainId });
     if (!(await ask("sign"))) return await fail("airline declined before signing");
     const signature = await d.signer.signTypedData(prep.eip712);
     emit({ step: "signed" });

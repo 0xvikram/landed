@@ -87,7 +87,7 @@
         <p>The airline publishes its compensation rule once. After that, every late landing is handled by its payment agent, with a person approving each payout.</p>
       </div>
       <div class="steps">
-        <div class="step"><div><h3>The passenger's agent sends the claim</h3><p>Flight, date, booking and the wallet to pay. The booking reference never goes on chain, only a fingerprint of it.</p></div></div>
+        <div class="step"><div><h3>The passenger's agent signs the claim</h3><p>Flight, date, delay and its own wallet, signed with EIP-712. The booking reference never goes on chain, only a fingerprint of it. The contract pays only the wallet that signed.</p></div></div>
         <div class="step"><div><h3>The airline's agent checks the published rule</h3><p>The rule lives in a contract on HSK Chain: for example 2 hours late pays $10, 3 hours $25, 5 hours $60. Code decides the amount, never an AI model.</p></div></div>
         <div class="step"><div><h3>It locks the booking before paying</h3><p>A reservation on HSK Chain means a second claim for the same booking is refused, even if it arrives a second later.</p></div></div>
         <div class="step"><div><h3>A person approves, the agent pays through HSP</h3><p>The airline sees who is paid, from where and how much, and approves. The agent then pays through HashKey Settlement Platform: order, quote, signature, submit, confirm.</p></div></div>
@@ -126,7 +126,7 @@
       <div class="grid3">
         <div class="card"><div class="num">HSP</div><h3 style="margin-top:10px">HashKey Settlement Platform</h3><p>The airline's agent pays through HSP's agentic payment tools: an AP2-style cart, an x402 payment method and a signed mandate. HSP's gateway broadcasts the payment.</p></div>
         <div class="card"><div class="num">HSK CHAIN</div><h3 style="margin-top:10px">Policy and receipts</h3><p>The rule, the reservation and the receipt live in one small contract on HSK Chain mainnet, so anyone can check what was paid and why.</p></div>
-        <div class="card"><div class="num">MCP</div><h3 style="margin-top:10px">Agent to agent</h3><p>The passenger's agent sends terms, the airline's agent pays, and the passenger's agent checks the payment with HSP before showing "paid".</p></div>
+        <div class="card"><div class="num">MCP</div><h3 style="margin-top:10px">Agent to agent</h3><p>The passenger's agent signs a claim with its own wallet. The airline's agent checks the signature, pays through HSP, and the contract on HSK Chain re-checks it: only the signer can be paid.</p></div>
       </div>
     </div>
   </section>

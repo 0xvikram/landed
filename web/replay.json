@@ -1,0 +1,180 @@
+{
+ "generated": "2026-11-27T10:03:53.648Z",
+ "runs": [
+  {
+   "id": "2026-11-27-M2V9QL",
+   "mode": "form",
+   "button": "Replay: airline form, 27 Nov (M2V9QL)",
+   "banner": "Replay of a real HSP payment made on 27 Nov 2026 from this page (booking M2V9QL, $10 test USDC on Ethereum Sepolia). The links are live.",
+   "source": "Step times from the recorded demo screen; hashes read back from Ethereum Sepolia and HSK testnet.",
+   "policy": {
+    "version": "v1",
+    "address": "0x2b44008428ce6ee69c0b44aec4daef74b22c5a71"
+   },
+   "form": {
+    "flight": "DA117",
+    "date": "2026-12-01",
+    "delayMinutes": 134,
+    "bookingRef": "M2V9QL",
+    "wallet": "0x0fd0C4B952F9172E66A86eF22409e375c0794df2"
+   },
+   "events": [
+    {
+     "at": "2026-11-27T08:56:38.000Z",
+     "step": "start",
+     "mode": "hsp"
+    },
+    {
+     "at": "2026-11-27T08:56:40.000Z",
+     "step": "checked",
+     "amountUsd": "10.00",
+     "delayMinutes": 134
+    },
+    {
+     "at": "2026-11-27T08:56:45.000Z",
+     "step": "reserved",
+     "tx": "0x4ed6e47236bb42c3adf921182c092df842413d87edadf575b3672931719750e0"
+    },
+    {
+     "at": "2026-11-27T08:56:48.000Z",
+     "step": "order",
+     "flowId": "a0d6e9af-9433-4596-92ac-30f3aef49311"
+    },
+    {
+     "at": "2026-11-27T08:56:48.000Z",
+     "step": "prepared",
+     "tokenTotalRaw": "10002001"
+    },
+    {
+     "at": "2026-11-27T08:56:48.000Z",
+     "step": "approval",
+     "approval": {
+      "payTo": "0x0fd0C4B952F9172E66A86eF22409e375c0794df2",
+      "payer": "0x92742A4C1E116281808ECFeb0Cc443B083B34B7e",
+      "amountUsd": "10.00",
+      "tokenTotalRaw": "10002001",
+      "stage": "sign",
+      "network": "sepolia",
+      "chainId": 11155111
+     }
+    },
+    {
+     "at": "2026-11-27T08:56:49.000Z",
+     "step": "signed"
+    },
+    {
+     "at": "2026-11-27T08:56:49.000Z",
+     "step": "approval",
+     "approval": {
+      "payTo": "0x0fd0C4B952F9172E66A86eF22409e375c0794df2",
+      "payer": "0x92742A4C1E116281808ECFeb0Cc443B083B34B7e",
+      "amountUsd": "10.00",
+      "tokenTotalRaw": "10002001",
+      "stage": "submit",
+      "network": "sepolia",
+      "chainId": 11155111
+     }
+    },
+    {
+     "at": "2026-11-27T08:56:51.000Z",
+     "step": "submitted"
+    },
+    {
+     "at": "2026-11-27T08:56:52.000Z",
+     "step": "status",
+     "status": "payment-submitted"
+    },
+    {
+     "at": "2026-11-27T08:57:08.000Z",
+     "step": "status",
+     "status": "payment-submitted"
+    },
+    {
+     "at": "2026-11-27T08:57:24.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:57:40.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:57:57.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:58:12.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:58:28.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:58:44.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:59:01.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:59:17.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:59:33.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T08:59:49.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T09:00:05.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T09:00:21.000Z",
+     "step": "status",
+     "status": "payment-included"
+    },
+    {
+     "at": "2026-11-27T09:00:37.000Z",
+     "step": "status",
+     "status": "payment-safe"
+    },
+    {
+     "at": "2026-11-27T09:00:41.000Z",
+     "step": "settled",
+     "tx": "0x849a8f6e1b11b94d143e453fef277a0ca7c56667740d4a3558a287818d332dc2",
+     "settlementTx": "0x69d358e2201d9bcb301b67aee49b7e430c3486083de40e9b94973eb104d55e15",
+     "chainId": "11155111"
+    },
+    {
+     "at": "2026-11-27T09:00:41.000Z",
+     "step": "done",
+     "result": {
+      "ok": true,
+      "bookingKey": "0x6c67eb5886a6ccad12ea570471f017017ef69a90465d24dc8936434674c68710",
+      "amountUsd": "10.00",
+      "settlementTx": "0x69d358e2201d9bcb301b67aee49b7e430c3486083de40e9b94973eb104d55e15",
+      "chainId": "11155111",
+      "receiptTx": "0x849a8f6e1b11b94d143e453fef277a0ca7c56667740d4a3558a287818d332dc2",
+      "flowId": "a0d6e9af-9433-4596-92ac-30f3aef49311"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -2,6 +2,7 @@
 import { createPublicClient, createWalletClient, defineChain, http, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { PolicyLike } from "./payout.js";
+import { claimArg } from "./claim.js";
 
 export const hskMainnet = defineChain({
   id: 177,
@@ -77,6 +78,31 @@ export const policyAbi = [
     ],
     outputs: [],
   },
+  {
+    type: "function",
+    name: "reserveWithClaim",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "c",
+        type: "tuple",
+        components: [
+          { name: "flight", type: "string" },
+          { name: "date", type: "string" },
+          { name: "bookingKey", type: "bytes32" },
+          { name: "delayMinutes", type: "uint32" },
+          { name: "payTo", type: "address" },
+          { name: "deadline", type: "uint64" },
+          { name: "nonce", type: "uint256" },
+        ],
+      },
+      { name: "signature", type: "bytes" },
+    ],
+    outputs: [{ type: "uint64" }],
+  },
+  { type: "error", name: "ClaimExpired", inputs: [{ name: "deadline", type: "uint64" }] },
+  { type: "error", name: "NonceUsed", inputs: [{ name: "payTo", type: "address" }, { name: "nonce", type: "uint256" }] },
+  { type: "error", name: "WrongSigner", inputs: [{ name: "signer", type: "address" }, { name: "payTo", type: "address" }] },
   { type: "error", name: "NotOwner", inputs: [] },
   { type: "error", name: "NotAgent", inputs: [] },
   { type: "error", name: "BadPolicy", inputs: [] },
@@ -91,7 +117,7 @@ export function policyOnChain(opts: { address: Address; writerKey: Hex; rpcUrl?:
   const transport = http(opts.rpcUrl ?? chain.rpcUrls.default.http[0]);
   const pub = createPublicClient({ chain, transport });
   const wallet = createWalletClient({ chain, transport, account: privateKeyToAccount(opts.writerKey) });
-  const write = async (functionName: "reserve" | "settle" | "release", args: readonly unknown[]) => {
+  const write = async (functionName: "reserve" | "reserveWithClaim" | "settle" | "release", args: readonly unknown[]) => {
     const hash = await wallet.writeContract({ address: opts.address, abi: policyAbi, functionName, args } as any);
     const receipt = await pub.waitForTransactionReceipt({ hash });
     if (receipt.status !== "success") throw new Error(`${functionName} reverted: ${hash}`);
@@ -101,6 +127,8 @@ export function policyOnChain(opts: { address: Address; writerKey: Hex; rpcUrl?:
     quote: (m) => pub.readContract({ address: opts.address, abi: policyAbi, functionName: "quote", args: [m] }),
     status: async (bk) => (await pub.readContract({ address: opts.address, abi: policyAbi, functionName: "payoutOf", args: [bk] })).status,
     reserve: (bk, fk, passenger, m) => write("reserve", [bk, fk, passenger, m]),
+    // LandedPolicyV2 only: the passenger agent's signed claim; the contract re-checks the signature.
+    reserveWithClaim: (c, sig) => write("reserveWithClaim", [claimArg(c), sig]),
     settle: (bk, chainId, tx) => write("settle", [bk, chainId, tx]),
     release: (bk, reason) => write("release", [bk, reason]),
   };

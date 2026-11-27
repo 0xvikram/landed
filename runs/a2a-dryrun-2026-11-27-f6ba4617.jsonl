@@ -1,0 +1,10 @@
+{"at":"2026-11-27T10:05:43.092Z","step":"start","mode":"hsp","policy":"0xac5f455d7e59933781680b4fb0217e111f4961ef","flight":"DA117","date":"2026-12-01","delayMinutes":134,"passenger":"0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA","a2a":true}
+{"at":"2026-11-27T10:05:43.093Z","step":"claim","claim":{"flight":"DA117","date":"2026-12-01","bookingKey":"0xd8b9f11ad1912fc79ebb2803182711ccaea9fc5c2a313e13432440baf21e6528","delayMinutes":134,"payTo":"0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA","deadline":1795775743,"nonce":"263232020789535908188148501218976328339"},"signature":"0x3d8d3318ac470bee983b5fd01ad4d0bd8cded95602a260c61dd5248b8634c64f64048864d9308e9ca27c4edb3a5116ad3dfd4c413a2447e4455bec1815aa3fa61b","signer":"0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA"}
+{"at":"2026-11-27T10:05:46.811Z","step":"checked","amountUsd":"10.00","delayMinutes":134}
+{"at":"2026-11-27T10:05:48.226Z","step":"reserved","tx":"0x2d127532cac61c5e8c6842c38385a2e6185e3963485fd0773c338e1028d18d70","viaClaim":true}
+{"at":"2026-11-27T10:05:50.792Z","step":"order","flowId":"f6ba4617-ef6a-4bc6-b203-ff817f0546ea","paymentRequestId":"landed-d8b9f11ad1912fc7"}
+{"at":"2026-11-27T10:05:51.507Z","step":"prepared","tokenTotalRaw":"10000000","quoteExpiresAt":"2026-11-27T10:10:51Z"}
+{"at":"2026-11-27T10:05:51.507Z","step":"approval","approval":{"payTo":"0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA","payer":"0x92742A4C1E116281808ECFeb0Cc443B083B34B7e","amountUsd":"10.00","tokenTotalRaw":"10000000","stage":"sign","network":"sepolia","chainId":11155111}}
+{"at":"2026-11-27T10:05:51.960Z","step":"approved","stage":"sign","ok":false}
+{"at":"2026-11-27T10:05:54.258Z","step":"released","reason":"airline declined before signing"}
+{"at":"2026-11-27T10:05:54.259Z","step":"done","result":{"ok":false,"bookingKey":"0xd8b9f11ad1912fc79ebb2803182711ccaea9fc5c2a313e13432440baf21e6528","reason":"airline declined before signing","flowId":"f6ba4617-ef6a-4bc6-b203-ff817f0546ea"}}

@@ -3,6 +3,7 @@
 // Run: npx tsx agent/server.ts   (reads .env: AGENT_PAYER_KEY, RECEIPT_WRITER_KEY, POLICY_ADDRESS, ...)
 import "dotenv/config";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { appendFileSync, mkdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { isAddress, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -11,12 +12,20 @@ import { policyOnChain } from "./chain.js";
 import { standInHsp } from "./standin.js";
 import { payDelayCompensation, type Approval, type Claim, type Step } from "./payout.js";
 import { pickToken } from "./token.js";
+import { verifyClaim, type SignedClaim } from "./claim.js";
+import { passengerAgent } from "./passenger.js";
+import { extractClaim, intakeConfigured, INTAKE_MODEL, INTAKE_PROMPT_SHA256 } from "./intake.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:5500,http://127.0.0.1:5500").split(",");
 const MERCHANT = process.env.HSP_MERCHANT_NAME ?? "Landed";
 const STAND_IN = process.env.HSP_MODE === "standin";
 const DEMO_WALLET = (process.env.DEMO_PASSENGER_WALLET ?? "") as Address;
+const POLICY = (process.env.POLICY_ADDRESS ?? "") as Address;
+const PASSENGER = process.env.PASSENGER_AGENT_KEY && POLICY ? passengerAgent(process.env.PASSENGER_AGENT_KEY as Hex, POLICY) : null;
+// Every run's events go to runs/<date>-<id>.jsonl (no secrets: steps, hashes, approvals). The replay is built from these.
+const RUNS_DIR = new URL("../runs/", import.meta.url);
+mkdirSync(RUNS_DIR, { recursive: true });
 
 export const FLIGHTS = [
   { id: "DA117", from: "LHR", to: "JFK", due: "14:10", date: "2026-12-01" },
@@ -29,6 +38,7 @@ type Run = {
   listeners: Set<ServerResponse>;
   pending?: { stage: Approval["stage"]; resolve: (ok: boolean) => void };
   done: boolean;
+  file: URL;
 };
 const runs = new Map<string, Run>();
 let busy = false; // one payout at a time keeps the demo wallet's nonces and quotes simple
@@ -39,19 +49,23 @@ function need(name: string) {
   return v;
 }
 
-function publish(run: Run, e: Run["events"][number]) {
-  run.events.push(e);
-  const line = `data: ${JSON.stringify(e, (_k, v) => (typeof v === "bigint" ? v.toString() : v))}\n\n`;
+function publish(run: Run, e: Run["events"][number] | { step: string; [k: string]: unknown }) {
+  run.events.push(e as Run["events"][number]);
+  const body = JSON.stringify(e, (_k, v) => (typeof v === "bigint" ? v.toString() : v));
+  appendFileSync(run.file, JSON.stringify({ at: new Date().toISOString(), ...JSON.parse(body) }) + "\n");
+  const line = `data: ${body}\n\n`;
   for (const res of run.listeners) res.write(line);
 }
 
-async function startClaim(claim: Claim) {
+async function startClaim(claim: Claim, intro: Array<{ step: string; [k: string]: unknown }> = []) {
   const signer = privateKeyToAccount(need("AGENT_PAYER_KEY") as Hex); // fail before marking busy
-  const policy = policyOnChain({ address: need("POLICY_ADDRESS") as Address, writerKey: need("RECEIPT_WRITER_KEY") as Hex, testnet: process.env.POLICY_NETWORK === "testnet" });
+  const policy = policyOnChain({ address: need("POLICY_ADDRESS") as Address, writerKey: need("RECEIPT_WRITER_KEY") as Hex, testnet: process.env.POLICY_NETWORK === "testnet", rpcUrl: process.env.POLICY_RPC || undefined });
   const id = randomUUID();
-  const run: Run = { events: [], listeners: new Set(), done: false };
+  const run: Run = { events: [], listeners: new Set(), done: false, file: new URL(`${new Date().toISOString().slice(0, 10)}-${id}.jsonl`, RUNS_DIR) };
   runs.set(id, run);
   busy = true;
+  publish(run, { step: "start", mode: STAND_IN ? "standin" : "hsp", policy: POLICY, flight: claim.flight, date: claim.date, delayMinutes: claim.delayMinutes, passenger: claim.passenger, a2a: !!claim.signed });
+  for (const e of intro) publish(run, e);
   (async () => {
     const hsp = STAND_IN ? null : new Hsp();
     try {
@@ -111,7 +125,42 @@ export const server = createServer(async (req, res) => {
   try {
     if (req.method === "GET" && url.pathname === "/api/health") {
       const h = STAND_IN ? { ok: true, detail: "stand-in" } : await healthCheck().catch((e) => ({ ok: false, detail: String(e) }));
-      return json(res, 200, { hsp: h.ok, hspDetail: h.detail, mode: STAND_IN ? "standin" : "hsp", flights: FLIGHTS, demoWallet: DEMO_WALLET || null, busy });
+      return json(res, 200, { hsp: h.ok, hspDetail: h.detail, mode: STAND_IN ? "standin" : "hsp", flights: FLIGHTS, demoWallet: DEMO_WALLET || null, busy, policy: POLICY, passengerAgent: PASSENGER?.address ?? null, intake: intakeConfigured() ? { model: INTAKE_MODEL, promptSha256: INTAKE_PROMPT_SHA256 } : null });
+    }
+    // AI intake: free text -> fields for a person to confirm. Never sets money.
+    if (req.method === "POST" && url.pathname === "/api/intake") {
+      const b = await readJson(req);
+      const r = await extractClaim(String(b.text ?? ""));
+      return json(res, r.ok || !r.configured ? 200 : 422, r); // "not configured" is a normal answer, not an error
+    }
+    // The passenger's agent signs a claim with its own wallet. (In this demo both agents run on one server, with separate keys.)
+    if (req.method === "POST" && url.pathname === "/api/passenger/sign") {
+      if (!PASSENGER) return json(res, 503, { error: "Passenger agent is not configured" });
+      const b = await readJson(req);
+      const flight = FLIGHTS.find((f) => f.id === b.flight && f.date === b.date);
+      const delay = Number(b.delayMinutes);
+      const ref = String(b.bookingRef ?? "").trim();
+      if (!flight) return json(res, 400, { error: "Unknown flight" });
+      if (!Number.isInteger(delay) || delay < 0 || delay > 24 * 60) return json(res, 400, { error: "Delay must be 0 to 1440 minutes" });
+      if (!/^[A-Za-z0-9]{4,8}$/.test(ref)) return json(res, 400, { error: "Booking reference must be 4 to 8 letters or digits" });
+      const signed = await PASSENGER.sign({ flight: flight.id, date: flight.date, bookingRef: ref, delayMinutes: delay });
+      return json(res, 200, { ...signed, signer: PASSENGER.address });
+    }
+    // The airline's agent receives a signed claim from any passenger agent.
+    if (req.method === "POST" && url.pathname === "/api/a2a/claims") {
+      if (busy) return json(res, 429, { error: "Another payout is running. Try again in a minute." });
+      const b = await readJson(req);
+      const check = await verifyClaim(b.claim, b.signature, POLICY);
+      if (!check.ok) return json(res, 400, { error: `Claim refused: ${check.error}` });
+      const c = b.claim as SignedClaim;
+      const flight = FLIGHTS.find((f) => f.id === c.flight && f.date === c.date);
+      if (!flight) return json(res, 400, { error: "Claim refused: unknown flight" });
+      const intakeInfo = b.intake && typeof b.intake === "object" ? { model: String(b.intake.model ?? ""), promptSha256: String(b.intake.promptSha256 ?? "") } : null;
+      const id = await startClaim(
+        { flight: c.flight, date: c.date, passenger: c.payTo, delayMinutes: c.delayMinutes, signed: { claim: c, signature: b.signature as Hex } },
+        [{ step: "claim", claim: c, signature: b.signature, signer: check.signer, ...(intakeInfo ? { intake: intakeInfo } : {}) }],
+      );
+      return json(res, 201, { id, signer: check.signer });
     }
     if (req.method === "POST" && url.pathname === "/api/claims") {
       if (busy) return json(res, 429, { error: "Another payout is running. Try again in a minute." });
@@ -143,6 +192,7 @@ export const server = createServer(async (req, res) => {
       if (!run.pending || run.pending.stage !== b.stage) return json(res, 409, { error: "Nothing waiting for that approval" });
       const p = run.pending;
       run.pending = undefined;
+      publish(run, { step: "approved", stage: p.stage, ok: b.ok === true });
       p.resolve(b.ok === true);
       return json(res, 200, { ok: true });
     }

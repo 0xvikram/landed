@@ -7,3 +7,5 @@ cache/
 typechain-types/
 dist/
 .vercel/
+runs/*.jsonl
+!runs/a2a-*.jsonl

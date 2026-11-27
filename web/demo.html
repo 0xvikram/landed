@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Live demo · Landed</title>
-<meta name="description" content="Pick a flight, choose how late it lands, approve, and watch the airline's agent pay the passenger through HSP.">
+<meta name="description" content="Pick a flight, choose how late it lands, approve, and watch the airline's agent pay the passenger (or the passenger's own agent) through HSP. Offline? Watch a replay of a real payment.">
 <link rel="icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -17,11 +17,22 @@
     <div class="eyebrow">Live demo</div>
     <h2 style="margin-top:12px">Land a flight late. <em>Watch the payout.</em></h2>
     <p class="banner" id="status" style="margin-top:18px">Checking the airline agent…</p>
+    <div id="replayBar" class="replay-bar" hidden></div>
   </div>
 
   <div class="app">
     <aside>
-      <h3>1. Pick a flight</h3>
+      <div class="seg" role="tablist" aria-label="Who sends the claim" style="margin-bottom:20px"><button id="mode-form" role="tab" aria-selected="true">Airline form</button><button id="mode-a2a" role="tab" aria-selected="false">Passenger agent</button></div>
+      <div id="a2aIntro" class="a2a" hidden>
+        <div class="eyebrow">Passenger agent</div>
+        <p class="note" style="margin-top:8px">The passenger's own agent signs the claim with its wallet. The airline's agent only pays the wallet that signed.</p>
+        <p class="mono-line">Wallet <b id="paxAddr">–</b></p>
+        <label class="field" for="story">Tell the agent what happened (optional)</label>
+        <textarea id="story" rows="3" spellcheck="false" placeholder="My DA117 from London on 1 Dec landed at 16:24 instead of 14:10, booking XK4P2Q"></textarea>
+        <button class="btn ghost small" id="readStory" style="margin-top:8px">Read it with AI</button>
+        <div id="intakeOut"></div>
+      </div>
+      <h3 id="h-flight" style="margin-top:4px">1. Pick a flight</h3>
       <p class="note">Simulated flights. Nothing here is a real airline schedule.</p>
       <div id="flights" style="margin-top:12px"></div>
 
@@ -31,9 +42,11 @@
 
       <label class="field" for="booking">Booking reference (made up)</label>
       <input id="booking" type="text" value="" maxlength="8" spellcheck="false">
+      <div id="walletBox">
       <label class="field" for="wallet">Passenger wallet to pay</label>
       <input id="wallet" type="text" value="" spellcheck="false">
       <p class="note">Leave the demo wallet, or paste a test wallet of your own. Never a real booking.</p>
+      </div>
 
       <button class="btn" id="land" style="margin-top:18px;width:100%;justify-content:center">Land the flight</button>
     </aside>

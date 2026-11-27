@@ -20,7 +20,8 @@ Track 2: Agent Payments & A2A Settlement
 - Code: https://github.com/0xvikram/landed
 - Video (2:18, AI voice): https://youtu.be/TE_I-rVXaNY
 - Mainnet contract (HSK Chain, 177): **[TODO]**
-- Testnet contract (HSK testnet, 133): [0x2b44008428ce6ee69c0b44aec4daef74b22c5a71](https://testnet-explorer.hskchain.net/address/0x2b44008428ce6ee69c0b44aec4daef74b22c5a71)
+- Testnet contract v2 (HSK testnet, 133, agent-to-agent claims, source verified): [0xac5f455d7e59933781680b4fb0217e111f4961ef](https://testnet-explorer.hskchain.net/address/0xac5f455d7e59933781680b4fb0217e111f4961ef#code), deploy tx `0xd6a640604974b105bd3450248fa13c1850f44fe75c6e797ec68a3f33bd88d10b`, block 36293386
+- Testnet contract v1 (HSK testnet, 133, receipts of the first two real payments): [0x2b44008428ce6ee69c0b44aec4daef74b22c5a71](https://testnet-explorer.hskchain.net/address/0x2b44008428ce6ee69c0b44aec4daef74b22c5a71)
 
 ## The problem
 When a flight lands late, the passenger is often owed money. Under EU rules (EU261) that is €250 to €600 per person ([europa.eu](https://europa.eu/youreurope/citizens/travel/passenger-rights/air/index_en.htm)), and the UK and Canada have similar rules. To get it, the passenger has to find the rule, fill in a form, and wait weeks. The airline already knows the flight was late, and it already knows who was on board.
@@ -28,7 +29,7 @@ When a flight lands late, the passenger is often owed money. Under EU rules (EU2
 ## What Landed does
 Landed is the airline's payment agent. When a flight lands late:
 
-1. The passenger's agent (or the passenger) sends a claim: flight, booking reference, wallet.
+1. The passenger's agent signs a claim with its own wallet (EIP-712): flight, date, a hash of the booking reference, delay, the wallet to pay, a deadline and a nonce. (Or the airline's form is used, as in v1.)
 2. The airline's agent reads the published compensation rule from the `LandedPolicy` contract on HSK Chain. For example: 2 h late pays $10, 3 h pays $25, 5 h pays $60.
 3. It **reserves** the booking on HSK Chain. Any second claim for the same booking is refused by the contract, even if the reference is typed differently.
 4. A person at the airline approves, as HSP requires. The agent then pays through HashKey Settlement Platform: `create_order → prepare_payment → sign (EIP-712) → finalize_payment → submit_payment → query_payment`.
@@ -43,15 +44,34 @@ If the payment fails before it is sent, the booking is released so the passenger
 - `query_payment` is polled every 15 s, with `expected_merchant_name` and `attribution_verified` checked. Only `payment-safe` / `payment-finalized` count as paid.
 - An expired quote (error 30043) is re-prepared, not retried blindly.
 
+## Agent-to-agent claims
+The track is A2A, so the passenger has an agent too, with its own wallet.
+- **The passenger's agent signs.** It builds `Claim {flight, date, bookingKey, delayMinutes, payTo, deadline, nonce}` and signs it with EIP-712 (domain `Landed`, version `2`, chain 133, verifying contract = the policy). `payTo` is its own wallet. The raw booking reference never leaves the passenger's side; only its hash is signed ([agent/claim.ts](agent/claim.ts), [agent/passenger.ts](agent/passenger.ts)).
+- **The airline's agent checks first.** `POST /api/a2a/claims` recovers the signer off-chain (viem) and refuses anything where signer ≠ payTo, the deadline has passed, or a field was changed after signing, with a clear error before anything is reserved or paid.
+- **The contract checks again.** `LandedPolicyV2.reserveWithClaim(claim, signature)` recovers the signer with OpenZeppelin ECDSA/EIP712 and requires signer == payTo, an unexpired deadline, an unused nonce and an unclaimed booking. It then reserves exactly like `reserve()` and emits `ClaimAccepted`. `settle` pays only that payTo, so the HSP payment can only go to the wallet that signed. The v1 agent-only `reserve` path still works.
+- **Same HSP flow, same two human approvals.** The airline agent pays `claim.payTo` through HSP, then settles the receipt on V2. The proof page marks these rows **A2A**.
+- **Honest scope.** In the demo both agents run on one server, each with its own key; the delay is simulated and taken from the claim. A real airline would check the delay against its own arrival record before reserving.
+
+## AI intake (and its limits)
+The passenger can describe the delay in plain words ("My DA117 on 1 Dec landed at 16:24 instead of 14:10, booking XK4P2Q"). An LLM (Groq, `llama-3.3-70b-versatile`) turns that into `{flight, date, bookingRef, scheduledArrival, actualArrival, delayMinutes}` ([agent/intake.ts](agent/intake.ts), prompt in [agent/prompts/intake.md](agent/prompts/intake.md), sha256 `646174858c1d3b4a5f18e9412c4efc1c30ced0aa616bc28fd010b6ce2ad7e6c6`).
+- **The LLM never sets money.** Its output only fills the form; the contract's published tiers decide the amount.
+- **A person confirms.** The extracted fields are shown with any warnings before the passenger agent signs anything.
+- **Checked, not trusted.** The delay is recomputed from the two arrival times (including landings after midnight); if the model's number disagrees it is replaced and flagged. Missing fields are listed, not invented; non-JSON output sends the person back to the form. The model name and prompt hash go with the claim to the airline agent and into its run log.
+- **Not switched on yet.** There is no Groq key on the demo server yet, so the live intake answers "AI intake not configured" and the form is used. No fake AI output is ever shown.
+
+## Replay mode
+The live agent has to run on the one laptop whose IP HSP allowlisted. When it is offline, the demo page no longer dead-ends: it offers "Replay" and plays a recorded real run step by step (order, quote, both approvals, signed, submitted, HSP polling, safe, receipt) under a banner: "Replay of a real HSP payment made on 27 Nov 2026 … The links are live." The data is [web/replay.json](web/replay.json), built by [scripts/build-replay.mjs](scripts/build-replay.mjs) from the recorded demo screen and the chain; the script refuses to write it unless every transaction is confirmed on-chain. New runs are logged by the agent server to `runs/*.jsonl`, and the builder turns a completed real A2A run into a replay.
+
 ## What's on HSK Chain
-`LandedPolicy.sol` ([contracts/LandedPolicy.sol](contracts/LandedPolicy.sol)):
+`LandedPolicy.sol` ([contracts/LandedPolicy.sol](contracts/LandedPolicy.sol)) and `LandedPolicyV2.sol` ([contracts/LandedPolicyV2.sol](contracts/LandedPolicyV2.sol), adds `reserveWithClaim`):
 - **Published rule:** delay tiers in USD cents, which the owner can update and which emit an event.
 - **One payout per booking:** `reserve → settle` or `reserve → release`. Booking keys are a hash of flight, date and normalised reference, so no personal data goes on-chain.
 - **Receipts:** a `PayoutPaid` event with the amount, passenger wallet, settlement chain and HSP transaction hash. The proof page reads these straight from the RPC.
-- **Totals:** `paidCount` and `paidCentsTotal` on-chain.
+- **Totals:** `paidCount` and `paidCentsTotal` on-chain. The proof page reads both v1 and v2 and labels each row; totals count real HSP payouts only.
 
 ## Status and honesty notes
-- The contract has 7 Hardhat tests and the payout agent has 7 tests, covering the happy path, a duplicate claim, a short delay, a decline, a failed payment, errors before and after submit, and a timeout.
+- **33 tests.** Contracts: 16 Hardhat tests (7 for v1; 9 for v2: digest matches off-chain, valid claim reserves and the receipt carries payTo, wrong signer, expired, replayed nonce, same booking under a new nonce, tampered delay/payTo/booking, short delay, non-agent caller, v1 path still works). Agent: 17 tests (the 7 payout tests: happy path, duplicate claim, short delay, decline, failed payment, errors before and after submit, timeout; 4 A2A tests; 6 AI-intake tests with a mocked LLM: no key, valid, missing field, non-JSON, a made-up delay, past-midnight and junk fields).
+- **A2A on HSK testnet and real HSP, 27 Nov 2026 (dry run, no money moved).** From the demo page in passenger-agent mode against the real HSP gateway: the passenger agent `0x18ed863387D8a27e6bdFDBA5bAE5FfCf0eEbC7FA` signed the claim, the airline agent verified it, `reserveWithClaim` locked the booking on V2 (tx [0x2d127532…d18d70](https://testnet-explorer.hskchain.net/tx/0x2d127532cac61c5e8c6842c38385a2e6185e3963485fd0773c338e1028d18d70), `PayoutReserved` + `ClaimAccepted`), HSP created order `f6ba4617-ef6a-4bc6-b203-ff817f0546ea` and locked a quote of 10000000 raw units on Ethereum Sepolia paying the passenger agent's wallet. The approver declined at the first approval and the booking was released (tx [0xff29aee5…6ec2](https://testnet-explorer.hskchain.net/tx/0xff29aee567842e9c59e61d196c3c61f0138ca5ca787d6c23ac5890859c6a6ec2)). **The paid A2A run is still to do:** the airline agent's wallet holds 9.997999 test USDC on Ethereum Sepolia and 9.998 on Base Sepolia, just under a $10 quote.
 - On HSK testnet, a full run wrote a real reserve and settle and refused a second claim (`npx tsx agent/testnet-run.ts`).
 - **Real HSP payment, 27 Nov 2026.** HSP allowlisted our IP and `npx tsx agent/hsp-run.ts` ran one full payout through the HSP QA gateway: order `b2df6155-ab2d-455d-bf6e-d2fa2f7b5c69`, quote locked, two approvals, EIP-3009 signature, `payment-safe`. HSP moved 10.002 USDC (the $10 tier plus a 0.002 USDC fee) from the airline agent wallet to the passenger on Base Sepolia, tx [0x9488b7ae…160a](https://sepolia.basescan.org/tx/0x9488b7ae400f1850d7e59afb88b31268dc699412665e382004a3d32aba91160a). LandedPolicy then wrote the receipt on HSK testnet, tx [0x594226d2…60cf](https://testnet-explorer.hskchain.net/tx/0x594226d27c5fafbc763cf56b7d5632b7bcda483e4e9d06cb668a74ff788360cf). The proof page marks it "HSP".
 - **Second real HSP payment, recorded for the demo video, 27 Nov 2026.** Run from the live demo page (`demo.html` against the local agent, real HSP mode) with two human approvals: DA117, 2 h 14 m late, booking `M2V9QL`, HSP flow `a0d6e9af-9433-4596-92ac-30f3aef49311`, quote 10002001 raw units, `payment-safe`. HSP moved 10.002001 test USDC from the airline agent wallet to the passenger on Ethereum Sepolia, tx [0x69d358e2…d55e15](https://sepolia.etherscan.io/tx/0x69d358e2201d9bcb301b67aee49b7e430c3486083de40e9b94973eb104d55e15). LandedPolicy wrote the receipt on HSK testnet (settlement chain 11155111 recorded in the event), tx [0x849a8f6e…332dc2](https://testnet-explorer.hskchain.net/tx/0x849a8f6e1b11b94d143e453fef277a0ca7c56667740d4a3558a287818d332dc2); booking lock tx `0x4ed6e472…9750e0`. Claiming `m2v9ql` again was refused by the contract with no payment.
@@ -60,7 +80,6 @@ If the payment fails before it is sent, the booking is released so the passenger
 
 ## What's next
 - Read real arrival times from a flight-status feed instead of a simulated delay.
-- Pay a passenger's own agent (A2A): the passenger agent submits the claim and receives the payout without a form.
 - Several airlines on one contract, each with its own rule and agents.
 
 ## Team
@@ -84,7 +103,7 @@ The video uses real screens only. Lines marked **[HSP]** show a real HSP payment
 | 8 | 1:22 | **[HSP]** The transfer on Blockscout (Ethereum Sepolia): 10.002001 test USDC, airline → passenger | One honest note. HSP's test environment settles in test USDC, on a test network. The rule, the booking lock and the receipt live on HSK Chain. Both transactions are one click away. |
 | 9 | 1:38 | Same booking typed in lowercase, "already claimed" | Now claim the same booking again, even typed in lowercase. The contract refuses. No double payouts. |
 | 10 | 1:46 | Proof page, HSP row read from HSK testnet | Every payout is public. This page reads the receipts straight from HSK Chain, not from our server. Real HSP payments are marked. |
-| 11 | 1:57 | Under the hood: contract, HSP flow, approvals, tests | Under the hood: one contract for the rule and the receipts, and an agent that follows HSP's payment flow with two human approvals. Fourteen tests cover every way it can fail. |
+| 11 | 1:57 | Under the hood: contract, HSP flow, approvals, tests | Under the hood: one contract for the rule and the receipts, and an agent that follows HSP's payment flow with two human approvals. Fourteen tests cover every way it can fail. *(Now 33 tests; v2 adds signed A2A claims: re-record if the video is redone.)* |
 | 12 | 2:11 | End card, landed-delay.vercel.app | Landed. Delay pay, the moment you land. |
 
 Recording notes:
