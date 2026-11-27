@@ -10,6 +10,7 @@ import { Hsp, healthCheck } from "./hsp.js";
 import { policyOnChain } from "./chain.js";
 import { standInHsp } from "./standin.js";
 import { payDelayCompensation, type Approval, type Claim, type Step } from "./payout.js";
+import { pickToken } from "./token.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:5500,http://127.0.0.1:5500").split(",");
@@ -80,24 +81,6 @@ async function startClaim(claim: Claim) {
     }
   })();
   return id;
-}
-
-/** Choose the payment token from get_chain_config. Prefers PAY_NETWORK, then a USDC on an EIP-3009 test network. */
-export function pickToken(config: any) {
-  const list: any[] = config?.tokens ?? config?.networks?.flatMap((n: any) => (n.tokens ?? []).map((t: any) => ({ ...n, ...t }))) ?? [];
-  const want = process.env.PAY_NETWORK;
-  const t =
-    list.find((x) => want && (x.network === want || String(x.chain_id) === want)) ??
-    list.find((x) => /usdc/i.test(x.coin ?? x.symbol ?? "") && (x.payment_protocol ?? x.protocol) === "eip3009") ??
-    list[0];
-  if (!t) throw new Error("get_chain_config returned no tokens");
-  return {
-    network: t.network,
-    chainId: Number(t.chain_id ?? t.chainId),
-    contract: (t.address ?? t.contract_address) as Address,
-    coin: t.coin ?? t.symbol,
-    protocol: (t.payment_protocol ?? t.protocol ?? "eip3009") as "eip3009" | "permit2",
-  };
 }
 
 function cors(req: IncomingMessage, res: ServerResponse) {
